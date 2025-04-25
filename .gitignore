@@ -1,0 +1,6 @@
+*.tar.gz
+/config/GeoLite2-Country.mmdb
+/internal/**/testdata/
+
+.DS_Store
+.idea/

@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: update-mmdb-job
+spec:
+  schedule: "0 4 * * 0" # Every Sunday at 4am
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mmdb-updater
+              image: curlimages/curl:latest
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  curl -s -o /tmp/db.tar.gz "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=$(MAXMIND_LICENSE_KEY)&suffix=tar.gz" &&
+                  tar --wildcards -xzf /tmp/db.tar.gz -C /data --strip-components=1 */GeoLite2-Country.mmdb
+              env:
+                - name: MAXMIND_LICENSE_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: maxmind-secret
+                      key: license-key
+              volumeMounts:
+                - name: geoip-db
+                  mountPath: /data
+          restartPolicy: OnFailure
+          volumes:
+            - name: geoip-db
+              persistentVolumeClaim:
+                claimName: geoip-mmdb-pvc

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geoip-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: geoip-service
+  template:
+    metadata:
+      labels:
+        app: geoip-service
+    spec:
+      containers:
+        - name: geoip-service
+          image: your-docker-repo/geoip-service:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: geodb
+              mountPath: /app/config
+      volumes:
+        - name: geodb
+          configMap:
+            name: geoip-config
